@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "596640413149",
+    "project_id": "oldgold-115bd",
+    "storage_bucket": "oldgold-115bd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596640413149:android:e272f8613eaaeda4463234",
+        "android_client_info": {
+          "package_name": "com.oldgold.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596640413149-g0cujauj17u8jhgerhvsbsc9lsu9bvga.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oldgold.app",
+            "certificate_hash": "3289c1aadfaac55b08ed7e5b1b8a981ae6d6fa61"
+          }
+        },
+        {
+          "client_id": "596640413149-3g0p5plf916277j95nrv0gp4hu1ldc59.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_PQEe793vpQLxO5XJLx6iDfGortSoZB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596640413149-3g0p5plf916277j95nrv0gp4hu1ldc59.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
