@@ -12,14 +12,22 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_objects"
         android:name="com.oldgold.app.ui.gallery.GalleryFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_contact"
         android:name="com.oldgold.app.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+    <fragment
+        android:id="@+id/nav_login"
+        android:name="com.oldgold.app.ui.login.LoginFragment"
+        android:label="@string/menu_login" />
+    <fragment
+        android:id="@+id/nav_register"
+        android:name="com.oldgold.app.ui.register.RegisterFragment"
+        android:label="@string/menu_register" />
 </navigation>
