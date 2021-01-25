@@ -1,6 +1,7 @@
 package com.oldgold.app.domain.database;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.Navigation;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,8 +20,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.oldgold.app.R;
+import com.oldgold.app.ui.home.HomeFragment;
 import com.oldgold.app.ui.register.RegisterFragment;
 
 import java.util.HashMap;
@@ -30,20 +34,22 @@ public class UserDAO {
 
     private final FirebaseFirestore db;
     private final FirebaseAuth fa;
+    private final FragmentTransaction transaction;
 
 
-    public UserDAO() {
+    public UserDAO(FragmentTransaction transaction) {
         this.db = Database.getInstance().getConnection();
         this.fa = FirebaseAuth.getInstance();
+        this.transaction = transaction;
     }
 
-    public void registerRequest(Map<String, String> datas, View root, Fragment fragment) {
+    public void registerRequest(Map<String, String> datas,View root, Fragment fragment) {
 
         fa.createUserWithEmailAndPassword(datas.get("email"), datas.get("password")).addOnCompleteListener( new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    fa.signInWithEmailAndPassword(datas.get("email"), datas.get("password"))
+                    loginResult(datas.get("email"), datas.get("password"))
                             .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                                 @RequiresApi(api = Build.VERSION_CODES.N)
                                 @Override
@@ -57,7 +63,7 @@ public class UserDAO {
                                             .set(datas).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
-                                            Navigation.findNavController(root).navigate(R.id.nav_login);
+                                            transaction.replace(R.id.nav_host_fragment, HomeFragment.class, null).remove(fragment).commit();
                                         }
                                     })
                                             .addOnFailureListener(new OnFailureListener() {
@@ -115,4 +121,21 @@ public class UserDAO {
                 });
     }
 
+    public Task<AuthResult> loginResult(String email, String password) {
+
+        return fa.signInWithEmailAndPassword(email, password);
+    }
+
+    public Task<DocumentSnapshot> getUserData() {
+        FirebaseUser myUser = fa.getCurrentUser();
+        return db
+                .collection("users")
+                .document(myUser.getUid())
+                .get();
+    }
+
+    public Boolean isUserLogged(){
+
+        return fa.getCurrentUser() != null;
+    }
 }

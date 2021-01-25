@@ -2,6 +2,7 @@ package com.oldgold.app.ui.register;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -27,6 +29,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.oldgold.app.R;
 import com.oldgold.app.domain.database.Database;
 import com.oldgold.app.domain.database.UserDAO;
+import com.oldgold.app.ui.home.HomeFragment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +38,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RegisterFragment extends Fragment {
 
     private RegisterViewModel registerViewModel;
-    private UserDAO userDAO = new UserDAO();
+    private UserDAO userDAO;
     private EditText email, password;
     private TextView name, lastName;
     private Button btnSignUp;
-    private FirebaseAuth firebaseAuth;
     private TextView textView;
+    private FragmentTransaction transaction;
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -48,13 +52,20 @@ public class RegisterFragment extends Fragment {
         registerViewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
         View root = inflater.inflate(R.layout.fragment_register, container, false);
         textView = root.findViewById(R.id.register_header);
+
+        transaction = this.getParentFragmentManager().beginTransaction();
+        userDAO = new UserDAO(transaction);
+
         registerViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(String s) {
                 textView.setText(s);
             }
         });
-        setUp(root);
+        if (!userDAO.isUserLogged())
+            setUp(root);
+        else
+            transaction.replace(R.id.nav_host_fragment, HomeFragment.class, null).remove(this).commit();
         return root;
 
     }
@@ -62,7 +73,6 @@ public class RegisterFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void setUp(View root) {
 
-        firebaseAuth = FirebaseAuth.getInstance();
         name = root.findViewById(R.id.name);
         lastName = root.findViewById(R.id.last_name);
         email = root.findViewById(R.id.email);
@@ -78,7 +88,7 @@ public class RegisterFragment extends Fragment {
             AtomicReference<Boolean> errors = new AtomicReference<>(false);
             datas.forEach((key, val) -> {
                 if(val.isEmpty()) {
-                    switch (val) {
+                    switch (key) {
                         case "name":
                             name.setError("field is mandatory");
                             name.requestFocus();
@@ -104,6 +114,7 @@ public class RegisterFragment extends Fragment {
 
                 }
             });
+            Log.d("errors:",errors.get().toString());
             if (errors.get()) {
                 Toast.makeText(getActivity(), "Fields must not be empty", Toast.LENGTH_SHORT).show();
                 root.findViewById(R.id.register_progress_bar).setVisibility(View.GONE);
