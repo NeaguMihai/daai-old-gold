@@ -18,10 +18,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.oldgold.app.R;
+import com.oldgold.app.domain.database.Database;
+import com.oldgold.app.domain.database.UserDAO;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RegisterFragment extends Fragment {
 
     private RegisterViewModel registerViewModel;
+    private UserDAO userDAO = new UserDAO();
     private EditText email, password;
     private TextView name, lastName;
     private Button btnSignUp;
@@ -64,17 +70,38 @@ public class RegisterFragment extends Fragment {
         btnSignUp = root.findViewById(R.id.register_button);
         btnSignUp.setOnClickListener(v -> {
             root.findViewById(R.id.register_progress_bar).setVisibility(View.VISIBLE);
-            Map<TextView, String> datas = new HashMap<>();
-            datas.put(name, name.getText().toString());
-            datas.put(lastName , lastName.getText().toString());
-            datas.put(email, email.getText().toString());
-            datas.put(password, password.getText().toString());
+            Map<String, String> datas = new HashMap<>();
+            datas.put("name", name.getText().toString());
+            datas.put("lastName" , lastName.getText().toString());
+            datas.put("email", email.getText().toString());
+            datas.put("password", password.getText().toString());
             AtomicReference<Boolean> errors = new AtomicReference<>(false);
             datas.forEach((key, val) -> {
                 if(val.isEmpty()) {
-                    key.setError("field is mandatory");
-                    key.requestFocus();
-                    errors.set(true);
+                    switch (val) {
+                        case "name":
+                            name.setError("field is mandatory");
+                            name.requestFocus();
+                            errors.set(true);
+                            break;
+                        case "lastName":
+                            lastName.setError("field is mandatory");
+                            lastName.requestFocus();
+                            errors.set(true);
+                            break;
+                        case "email":
+                            email.setError("field is mandatory");
+                            email.setError("email adress must be valid");
+                            email.requestFocus();
+                            errors.set(true);
+                            break;
+                        case "password":
+                            password.setError("password must be at least 6 characters long");
+                            password.requestFocus();
+                            errors.set(true);
+                            break;
+                    }
+
                 }
             });
             if (errors.get()) {
@@ -83,19 +110,7 @@ public class RegisterFragment extends Fragment {
             }
             else {
                 root.findViewById(R.id.register_progress_bar).setVisibility(View.VISIBLE);
-                firebaseAuth.createUserWithEmailAndPassword(datas.get(email), datas.get(password)).addOnCompleteListener( new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Navigation.findNavController(root).navigate(R.id.nav_login);
-                        }else {
-                            root.findViewById(R.id.register_progress_bar).setVisibility(View.GONE);
-                            Toast.makeText(getActivity(), "Fields must not be empty", Toast.LENGTH_SHORT).show();
-
-
-                        }
-                    }
-                });
+                userDAO.registerRequest(datas,root, this);
             }
         });
 
